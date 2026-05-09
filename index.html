@@ -1978,6 +1978,7 @@ function escapeHtml(text) {
   div.textContent = text;
   return div.innerHTML;
 }
+
 async function submitConfession() {
   const input = document.getElementById('confessionInput');
   const text = input.value.trim();
@@ -1994,26 +1995,10 @@ async function submitConfession() {
   }
   
   input.value = '';
-  await loadConfessions(); // Call the global function
+  await loadConfessions();
 }
-  
-  // Save to Supabase
-  const { data, error } = await supabase
-    .from('confessions')
-    .insert([{ content: text, likes: 0, reports: 0 }])
-    .select();
-  
-  if (error) {
-    console.error('Error saving confession:', error);
-    alert('Something went wrong. Please try again.');
-    return;
-  }
-  
-  // Clear input
-  input.value = '';
-  
-  // Refresh the confession feed to show the new one
-  async function loadConfessions() {
+
+async function loadConfessions() {
   const { data: confessions, error } = await supabase
     .from('confessions')
     .select('*')
@@ -2030,12 +2015,42 @@ async function submitConfession() {
   confessions.forEach(conf => {
     const item = document.createElement('div');
     item.className = 'confession-item';
-    item.innerHTML = `${conf.content}<div class="confession-footer"><div class="confession-time">${new Date(conf.created_at).toLocaleString()} • anonymous</div><div style="display:flex;gap:8px;align-items:center;"><button class="like-btn" data-id="${conf.id}" data-likes="${conf.likes}" onclick="toggleLikeSupabase(this)"><span class="heart-icon">🤍</span><span class="like-count">${conf.likes}</span></button><button class="report-btn" onclick="openReportModal(this)">🚩 report</button></div></div>`;
+    item.innerHTML = `${escapeHtml(conf.content)}<div class="confession-footer"><div class="confession-time">${new Date(conf.created_at).toLocaleString()} • anonymous</div><div style="display:flex;gap:8px;align-items:center;"><button class="like-btn" data-id="${conf.id}" data-likes="${conf.likes}" onclick="toggleLikeSupabase(this)"><span class="heart-icon">🤍</span><span class="like-count">${conf.likes}</span></button><button class="report-btn" onclick="openReportModal(this)">🚩 report</button></div></div>`;
     feed.appendChild(item);
   });
 }
-}
 
+async function toggleLikeSupabase(btn) {
+  const id = btn.getAttribute('data-id');
+  const currentLikes = parseInt(btn.getAttribute('data-likes'));
+  const isLiked = btn.classList.contains('liked');
+  const newLikes = isLiked ? currentLikes - 1 : currentLikes + 1;
+  
+  const { error } = await supabase
+    .from('confessions')
+    .update({ likes: newLikes })
+    .eq('id', id);
+  
+  if (error) {
+    console.error('Error updating like:', error);
+    return;
+  }
+  
+  btn.setAttribute('data-likes', newLikes);
+  const countEl = btn.querySelector('.like-count');
+  const heartEl = btn.querySelector('.heart-icon');
+  
+  if (!isLiked) {
+    btn.classList.add('liked');
+    heartEl.textContent = '🩷';
+    btn.classList.add('pop');
+    setTimeout(() => btn.classList.remove('pop'), 400);
+  } else {
+    btn.classList.remove('liked');
+    heartEl.textContent = '🤍';
+  }
+  countEl.textContent = newLikes;
+}
 // ===================== REPORT MODAL =====================
 let reportingItem = null;
 
