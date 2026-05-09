@@ -1719,6 +1719,7 @@ window.onload = async () => {
   setTimeout(() => document.getElementById('rulesModal').classList.remove('hidden'), 400);
   renderCarousel();
   await loadConfessions();
+  await loadCapeTownSpots();
 };
 function closeModal() {
   document.getElementById('rulesModal').classList.add('hidden');
@@ -2138,28 +2139,82 @@ function setRating(type, val) {
 }
 
 // ===================== CAPE TOWN =====================
-function submitCPT() {
+// ===================== CAPE TOWN =====================
+async function submitCPT() {
+  if (typeof window.supabaseClient === 'undefined') {
+    alert('Loading... Please try again in a moment.');
+    return;
+  }
+  
   const name = document.getElementById('cptName').value.trim();
   const area = document.getElementById('cptArea').value.trim();
   const review = document.getElementById('cptReview').value.trim();
   if (!name) return;
-  const ratingStr = (type, label) => {
-    const v = ratings[type];
-    return `${label} ${'⭐'.repeat(v)}${v===0?' (unrated)':''}`;
-  };
-  const feed = document.getElementById('cptFeed');
-  const item = document.createElement('div');
-  item.className = 'cpt-item';
-  item.innerHTML = `
-    <div class="cpt-place">${name}${area ? ', ' + area : ''}</div>
-    <div class="cpt-ratings">${ratingStr('afford','💸')} · ${ratingStr('service','🌟')} · ${ratingStr('dist','🚌')}</div>
-    ${review ? `<div class="cpt-review">${review}</div>` : ''}
-  `;
-  feed.prepend(item);
+  
+  const affordability = ratings.afford || 0;
+  const service = ratings.service || 0;
+  const distance = ratings.dist || 0;
+  
+  // Save to Supabase
+  const { error } = await window.supabaseClient
+    .from('capetown_spots')
+    .insert([{ 
+      place_name: name, 
+      area: area, 
+      review: review, 
+      affordability: affordability,
+      service_rating: service,
+      distance_rating: distance
+    }]);
+  
+  if (error) {
+    console.error('Error saving spot:', error);
+    alert('Something went wrong. Please try again.');
+    return;
+  }
+  
+  // Clear form
   document.getElementById('cptName').value = '';
   document.getElementById('cptArea').value = '';
   document.getElementById('cptReview').value = '';
-  ['afford','service','dist'].forEach(t => { ratings[t]=0; document.querySelectorAll(`#rating-${t} span`).forEach(s=>s.classList.remove('lit')); });
+  ['afford', 'service', 'dist'].forEach(t => { 
+    ratings[t] = 0; 
+    document.querySelectorAll(`#rating-${t} span`).forEach(s => s.classList.remove('lit'));
+  });
+  
+  // Refresh the feed
+  await loadCapeTownSpots();
+}
+
+async function loadCapeTownSpots() {
+  if (typeof window.supabaseClient === 'undefined') {
+    setTimeout(loadCapeTownSpots, 500);
+    return;
+  }
+  
+  const { data: spots, error } = await window.supabaseClient
+    .from('capetown_spots')
+    .select('*')
+    .order('created_at', { ascending: false });
+  
+  if (error) {
+    console.error('Error loading spots:', error);
+    return;
+  }
+  
+  const feed = document.getElementById('cptFeed');
+  feed.innerHTML = '';
+  
+  spots.forEach(spot => {
+    const item = document.createElement('div');
+    item.className = 'cpt-item';
+    item.innerHTML = `
+      <div class="cpt-place">${escapeHtml(spot.place_name)}${spot.area ? ', ' + escapeHtml(spot.area) : ''}</div>
+      <div class="cpt-ratings">💸 ${'⭐'.repeat(spot.affordability || 0)} · 🌟 ${'⭐'.repeat(spot.service_rating || 0)} · 🚌 ${'⭐'.repeat(spot.distance_rating || 0)}</div>
+      ${spot.review ? `<div class="cpt-review">${escapeHtml(spot.review)}</div>` : ''}
+    `;
+    feed.appendChild(item);
+  });
 }
 </script>
 
