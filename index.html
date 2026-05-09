@@ -1,4 +1,4 @@
-<!DOCTYPE html>
++<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -2139,8 +2139,9 @@ function setRating(type, val) {
 }
 
 // ===================== CAPE TOWN =====================
-// ===================== CAPE TOWN =====================
 async function submitCPT() {
+  console.log("✅ submitCPT function was clicked and is running!");
+  alert("Function is working!");
   if (typeof window.supabaseClient === 'undefined') {
     alert('Loading... Please try again in a moment.');
     return;
