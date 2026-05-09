@@ -34,14 +34,7 @@
     cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Ctext y='16' font-size='16'%3E⭐%3C/text%3E%3C/svg%3E"), auto;
   }
   
-<!-- Supabase Connection -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-  const SUPABASE_URL = "https://trluozrulqrhjsgtfwju.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRybHVvenJ1bHFyaGpzZ3Rmd2p1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzNDA2MTQsImV4cCI6MjA5MzkxNjYxNH0.EVAmdurkjaOipu_UHX5XVogFhTF7fTSa8DBv-xBrzOE";
-  window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  console.log("Supabase script loaded, client created");
-</script>
+
   
   /* GINGHAM BACKGROUND */
   .gingham-bg {
@@ -2201,5 +2194,13 @@ function submitCPT() {
   </div>
 </div>
 
+<!-- Supabase Connection -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://trluozrulqrhjsgtfwju.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRybHVvenJ1bHFyaGpzZ3Rmd2p1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzNDA2MTQsImV4cCI6MjA5MzkxNjYxNH0.EVAmdurkjaOipu_UHX5XVogFhTF7fTSa8DBv-xBrzOE";
+  window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  console.log("Supabase script loaded, client created");
+</script>
 </body>
 </html>
