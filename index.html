@@ -37,11 +37,10 @@
 <!-- Supabase Connection -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  // Initialize Supabase
   const SUPABASE_URL = "https://trluozrulqrhjsgtfwju.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRybHVvenJ1bHFyaGpzZ3Rmd2p1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzNDA2MTQsImV4cCI6MjA5MzkxNjYxNH0.EVAmdurkjaOipu_UHX5XVogFhTF7fTSa8DBv-xBrzOE";
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  console.log("Supabase connected!");
+  window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  console.log("Supabase script loaded, client created");
 </script>
   
   /* GINGHAM BACKGROUND */
@@ -1990,11 +1989,16 @@ function escapeHtml(text) {
 }
 
 async function submitConfession() {
+  if (typeof window.supabaseClient === 'undefined') {
+    alert('Loading... Please try again in a moment.');
+    return;
+  }
+  
   const input = document.getElementById('confessionInput');
   const text = input.value.trim();
   if (!text) return;
   
-  const { error } = await supabase
+  const { error } = await window.supabaseClient
     .from('confessions')
     .insert([{ content: text, likes: 0, reports: 0 }]);
   
@@ -2009,13 +2013,14 @@ async function submitConfession() {
 }
 
 async function loadConfessions() {
-   // Wait for supabase to be ready
-  if (typeof supabase === 'undefined') {
+  // Wait for supabase to be ready
+  if (typeof window.supabaseClient === 'undefined') {
     console.log('Waiting for Supabase...');
     setTimeout(loadConfessions, 500);
     return;
   }
-  const { data: confessions, error } = await supabase
+  
+  const { data: confessions, error } = await window.supabaseClient
     .from('confessions')
     .select('*')
     .order('created_at', { ascending: false });
@@ -2037,12 +2042,17 @@ async function loadConfessions() {
 }
 
 async function toggleLikeSupabase(btn) {
+  if (typeof window.supabaseClient === 'undefined') {
+    console.log('Supabase not ready');
+    return;
+  }
+  
   const id = btn.getAttribute('data-id');
   const currentLikes = parseInt(btn.getAttribute('data-likes'));
   const isLiked = btn.classList.contains('liked');
   const newLikes = isLiked ? currentLikes - 1 : currentLikes + 1;
   
-  const { error } = await supabase
+  const { error } = await window.supabaseClient
     .from('confessions')
     .update({ likes: newLikes })
     .eq('id', id);
