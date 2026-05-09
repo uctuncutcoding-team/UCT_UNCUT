@@ -2066,6 +2066,16 @@ function submitCPT() {
     <button class="pixel-btn pixel-btn-pink" onclick="closeThankYou()">CLOSE ✓</button>
   </div>
 </div>
+<!-- Supabase Connection -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // Initialize Supabase
+  const SUPABASE_URL = "https://trluozrulqrhjsgtfwju.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRybHVvenJ1bHFyaGpzZ3Rmd2p1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzNDA2MTQsImV4cCI6MjA5MzkxNjYxNH0.EVAmdurkjaOipu_UHX5XVogFhTF7fTSa8DBv-xBrzOE";
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+  // Test connection
+  console.log("Supabase connected!");
+</script>
 </body>
 </html>
