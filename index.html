@@ -1723,10 +1723,10 @@ function showPage(id) {
 }
 
 // RULES MODAL — click anywhere closes
-window.onload = () => {
+window.onload = async () => {
   setTimeout(() => document.getElementById('rulesModal').classList.remove('hidden'), 400);
   renderCarousel();
-  loadConfessions(); // Add this line
+  await loadConfessions();
 };
 function closeModal() {
   document.getElementById('rulesModal').classList.add('hidden');
@@ -2009,6 +2009,12 @@ async function submitConfession() {
 }
 
 async function loadConfessions() {
+   // Wait for supabase to be ready
+  if (typeof supabase === 'undefined') {
+    console.log('Waiting for Supabase...');
+    setTimeout(loadConfessions, 500);
+    return;
+  }
   const { data: confessions, error } = await supabase
     .from('confessions')
     .select('*')
