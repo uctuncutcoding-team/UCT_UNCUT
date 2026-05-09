@@ -1716,6 +1716,7 @@ function showPage(id) {
 window.onload = () => {
   setTimeout(() => document.getElementById('rulesModal').classList.remove('hidden'), 400);
   renderCarousel();
+  loadConfessions(); // Add this line
 };
 function closeModal() {
   document.getElementById('rulesModal').classList.add('hidden');
@@ -1946,11 +1947,55 @@ async function toggleLikeSupabase(btn) {
   }
   countEl.textContent = newLikes;
 }
+// Add this BEFORE submitConfession (around line 1900-1910)
+async function loadConfessions() {
+  const { data: confessions, error } = await supabase
+    .from('confessions')
+    .select('*')
+    .order('created_at', { ascending: false });
+  
+  if (error) {
+    console.error('Error loading confessions:', error);
+    return;
+  }
+  
+  const feed = document.getElementById('confessionFeed');
+  if (!feed) return;
+  
+  feed.innerHTML = '';
+  
+  confessions.forEach(conf => {
+    const item = document.createElement('div');
+    item.className = 'confession-item';
+    item.innerHTML = `${escapeHtml(conf.content)}<div class="confession-footer"><div class="confession-time">${new Date(conf.created_at).toLocaleString()} • anonymous</div><div style="display:flex;gap:8px;align-items:center;"><button class="like-btn" data-id="${conf.id}" data-likes="${conf.likes}" onclick="toggleLikeSupabase(this)"><span class="heart-icon">🤍</span><span class="like-count">${conf.likes}</span></button><button class="report-btn" onclick="openReportModal(this)">🚩 report</button></div></div>`;
+    feed.appendChild(item);
+  });
+}
 
+// Helper function to escape HTML
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
 async function submitConfession() {
   const input = document.getElementById('confessionInput');
   const text = input.value.trim();
   if (!text) return;
+  
+  const { error } = await supabase
+    .from('confessions')
+    .insert([{ content: text, likes: 0, reports: 0 }]);
+  
+  if (error) {
+    console.error('Error saving confession:', error);
+    alert('Something went wrong. Please try again.');
+    return;
+  }
+  
+  input.value = '';
+  await loadConfessions(); // Call the global function
+}
   
   // Save to Supabase
   const { data, error } = await supabase
